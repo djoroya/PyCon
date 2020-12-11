@@ -7,6 +7,8 @@ class ocp:
     functional = []
     NLP = []
     x0_num = []
+    ControlConstraints = []
+    NumControlConstraints = []
 
     def __init__(self,dynamics,PathCostStep,FinalCost):
         self.dynamics = dynamics
@@ -20,18 +22,25 @@ class ocp:
         ut   = self.dynamics.ut
         Udim = self.dynamics.ControlDim()
         Cost = self.functional.Cost
+        G    = self.ControlConstraints
+        numC = self.NumControlConstraints
 
         xt = self.dynamics.Ftraj(x0_num,ut)
-        
+        if  not G:
+            gt = []
+        else:
+            gt = [G(ut.T[i,:]) for i in range(Nt-1)]
+            gt = vcat(gt)
+            gt = reshape(gt,numC*(Nt-1),1)
 
         ut_flat = reshape(ut,Udim*(Nt-1),1)
 
-        nlp = {'x':ut_flat, 'f':Cost(xt,ut), 'g':[]}
+        nlp = {'x':ut_flat, 'f':Cost(xt,ut), 'g':gt}
         self.NLP = nlpsol('S', 'ipopt', nlp)
         self.x0_num = x0_num
 
 
-    def SolveNLP(self,u_guess):
+    def SolveNLP(self,u_guess,gt_low=[],gt_up=[]):
 
         if not self.NLP:
             raise Exception("Must be execute BuildNLP() method of ocp class.")
@@ -40,8 +49,9 @@ class ocp:
         Nt      = self.dynamics.get_Nt()
         u_guess = reshape(u_guess,Udim*(Nt-1),1)
 
+
         ###############################
-        result  = self.NLP(x0=u_guess)
+        result  = self.NLP(x0=u_guess,lbg=gt_low,ubg=gt_up)
         ###############################
 
         u_opt = result['x']
@@ -54,7 +64,10 @@ class ocp:
     def ZerosControl(self):
         return self.dynamics.ZerosControl()
 
-
+    def SetControlConstraints(self,g):
+        self.NumControlConstraints = g.size()[0]
+        G = Function('G',[self.dynamics.u],[g])
+        self.ControlConstraints = G
 
 
 

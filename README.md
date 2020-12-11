@@ -1,2 +1,1 @@
-# PyCon
-Fast Optimal Control implementation
+# Python Optimal Control Package 

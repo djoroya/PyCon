@@ -1,0 +1,212 @@
+\documentclass[]{article}
+
+\usepackage{amsfonts}
+\usepackage{amsmath,amssymb,amsthm,amsthm}
+\usepackage{mathtools}
+%\usepackage{dsfont}
+\usepackage{etoolbox}
+\usepackage{mathrsfs}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{fullpage}
+\usepackage{verbatim}
+\usepackage{courier}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{bm}
+\usepackage[outercaption]{sidecap} 
+
+\usepackage{microtype}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+
+\title{PyCon: The fastest optimal control package}
+\author{Jesús Oroya \\ Chair of Computational Mathematics}
+
+\begin{document}
+\maketitle    
+
+\begin{abstract}
+    En este documento presentaremos el paquete de control óptimo no lineal: PyCon. 
+    %
+    Esta es una librería para python que utiliza la programación orientada a objetos para la definición del sistema dinámico y el problema de control.
+    %
+    Debido a esto PyCon tiene una sintaxis muy simple para la definicion de problemas y una gran velocidad de computo gracias a la diferenciación automática heredada de CasADi.
+
+\end{abstract}
+\tableofcontents
+\section{Introducción}
+
+Al introducirnos al cálculo numérico del control óptimo no lineal con restricciones podemos ver distintas opciones de software. Por lo general, los distintos software estan espacializados en la ingeniría de control donde los detalles técnicos son importantes en la implementación pero que oscurecen el problema matemático. Por el contrario también existen paquetes de software cuyo objetivo final es el resolver un problema de programación no lineal, de manera que el usuario debe discretizar su problema de control óptimo y convertirlo en un NLP, como por ejemplo \emph{AMPL-IPOPT}. Este tipo de problemas han sido intensamente estudiados y con ayuda de la diferenciación automática hoy en día se tiene metodolgías con mucha eficacia. 
+
+
+ 
+\section{Trabajos relacionados}
+\subsection{CasADi}
+\subsection{IPOPT}
+\subsection{Gekko}
+
+\section{Diagrama de Clases}
+
+A continuación decribiremos de manera genral los problemas de control óptimo, para luego centrarnos en sus principales caráteristicas con el fin de mostrar como esta estrucurada el diagrama de clases diseñado en el paquete PyCon. 
+
+\subsection{\emph{dynacmis class}: Caracterización de un sistema dinámico}
+
+
+Un sistema dinámico queda definido dada una variable de estado $x \in \mathbb{R}^n$  y una variable de control $u \in \mathbb{R}^m$, donde $n$ y $m$ son las dimensiones de la variable de estado y de control respectivamente además de su ecuación de evolución:
+\begin{gather}\label{sys}
+    \begin{cases}
+        \dot{x}(t) = f(t,x(t),u(t)) & t \in (0,T]\\
+        x(0) = x_0
+    \end{cases}  
+\end{gather}
+
+En el cálculo numérico es necesario elegir una metodología de discretización temporal por lo que el problema anterior se puede escribir dado una partición $\mathcal{P}=\{t_0,t_1,\dots,t_{N_t}\}$ del intervalo $[0,T]$ podemos escribir (\ref{sys}) de la siguiente manera:
+\begin{gather}
+    \begin{cases}
+        x_{t+1} = x_{t} + 
+    \end{cases}
+\end{gather}
+
+Entonces los caráteristicas que lo define son: 
+
+\begin{table}[ht!]
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline 
+        Name & Notation \\
+        \hline \hline
+        Intervalo temporal & [0,T] \\
+        \hline
+        Variable de estado & $x \in \mathcal{X}$ \\
+        \hline 
+        Variable de control & $u \in \mathcal{U}$ \\
+        \hline
+    \end{tabular}
+    \caption{Caracteristicas de un sistema dinámico}
+\end{table}
+\begin{enumerate}
+    \item Un intervalo temporal $(0,T]$
+    \item La variable de estado $x \in \mathcal{X}$
+    \item La variable de Control $u \in \mathcal{U}$
+    \item Ecuación dinámica $f: [0,T] \times \mathcal{X} \times \mathcal{U} \rightarrow \mathcal{X}$
+    
+    \item Condición inicial del problema $x_0 \in \mathcal{X}$
+\end{enumerate}
+
+\begin{enumerate}
+    \item Características Obligatorias 
+    \begin{itemize}
+        \item variable de estado
+        \item variable de control
+        \item ecuación dinámica
+    \end{itemize}
+    \item Características Opcionales 
+    \begin{itemize}
+        \item intervalo de integración: Por defecto se toma 100 punto uniformemente distribuidos en el intervalo $[0,1]$
+        \item Metodología de integración: Por defecto se toma el método de euler.
+        \item Condición inicial del estado
+    \end{itemize}
+\end{enumerate}
+\begin{algorithm}[ht!]
+	\caption{Ejemplo de declaración de una sistema dinámico} \label{alg:coefficients_p2}
+    \begin{lstlisting}[language=Python]
+# Declare model variables
+x = MX.sym('x',2,1)
+u = MX.sym('u',1,1)
+t = MX.sym('t',1,1)
+
+# dynamic equations
+xdot = vcat([            -x[1]*sin(t)               , 
+                    -0.25*x[1]**3-x[0] + u[0]        ])
+
+# Build dynamics obj
+idyn = dynamics(t,x,u,xdot)
+idyn.SetIntegrator()
+\end{lstlisting}
+\end{algorithm} 
+
+\subsection{Definición de un problema de control óptimo}
+\subsubsection{Caracterización de un problema de control}
+Un problema de control óptimo general se puede escribir de la siguiente manera: 
+\begin{gather}
+    \min_{u(t)\in  \mathcal{U}} \Bigg[ \Psi(x(T)) + \int_0^T L(t,x(t),u(t))dt \Bigg] \\
+    g_{low} \leq G(u(t)) \leq g_{up} \\
+    \notag \text{subject to:} \\
+    \begin{cases}
+        \dot{x}(t) = f(t,x(t),u(t)) & t \in (0,T]\\
+        x(0) = x_0
+    \end{cases}  
+\end{gather}
+
+A continuación nombraremos las principales características que define este el problema
+
+\begin{enumerate}
+    \item Un sistema dinámico
+     \begin{gather}
+        \begin{cases}
+            \dot{x}(t) = f(t,x(t),u(t)) & t \in (0,T]\\
+            x(0) = x_0
+            \end{cases}          
+          \end{gather}
+
+    \item Coste Final $\Psi:\mathcal{X} \rightarrow \mathbb{R}$
+    \item Coste a través del camino $L:\mathcal{X} \times (0,T]\rightarrow \mathbb{R}$
+    \item Restricciones del control $G:\mathcal{U} \rightarrow \mathbb{R}^K$ donde $K$ es el número de restricciones considerardas.
+\end{enumerate}
+
+\begin{algorithm}[ht!]
+	\caption{Ejemplo de declaración de una sistema dinámico} \label{alg:coefficients_p2}
+    \begin{lstlisting}[language=Python]
+## Build OCP obj
+PathCost   = 1e-3*dot(u,u)
+FinalCost   = dot(x,x)
+##
+iocp = ocp(idyn,PathCost,FinalCost)
+iocp.functional.SetIntegrator()
+# Set initial Condition
+x0_num = [1,0]
+# Compile the NLP, where you fix the initial condition of your problem
+iocp.BuildNLP(x0_num)
+\end{lstlisting}
+\end{algorithm} 
+
+\section{Tipos de problemas}
+
+\section{NLP}
+
+\begin{gather}
+    \min_{u} 
+\end{gather}
+\section{Ejemplos}
+
+
+
+\end{document}

@@ -1,0 +1,11 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Trabajos relacionados}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{CasADi}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{IPOPT}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Gekko}{section.2}% 5
+\BOOKMARK [1][-]{section.3}{Diagrama de Clases}{}% 6
+\BOOKMARK [2][-]{subsection.3.1}{dynamics class: Sistema din\341mico}{section.3}% 7
+\BOOKMARK [3][-]{subsubsection.3.1.1}{Caraterizaci\363n de un sistema din\341mico}{subsection.3.1}% 8
+\BOOKMARK [2][-]{subsection.3.2}{dynamics class}{section.3}% 9
+\BOOKMARK [2][-]{subsection.3.3}{ocp class: Problema de control \363ptimo}{section.3}% 10
+\BOOKMARK [3][-]{subsubsection.3.3.1}{Caracterizaci\363n de un problema de control}{subsection.3.3}% 11

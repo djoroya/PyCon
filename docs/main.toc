@@ -1,0 +1,13 @@
+\babel@toc {english}{}
+\contentsline {section}{\numberline {1}Introducción}{1}%
+\contentsline {section}{\numberline {2}Trabajos relacionados}{2}%
+\contentsline {subsection}{\numberline {2.1}CasADi}{2}%
+\contentsline {subsection}{\numberline {2.2}IPOPT}{2}%
+\contentsline {subsection}{\numberline {2.3}Gekko}{2}%
+\contentsline {section}{\numberline {3}Diagrama de Clases}{2}%
+\contentsline {subsection}{\numberline {3.1}\emph {dynacmis class}: Caracterización de un sistema dinámico}{2}%
+\contentsline {subsection}{\numberline {3.2}Definición de un problema de control óptimo}{3}%
+\contentsline {subsubsection}{\numberline {3.2.1}Caracterización de un problema de control}{3}%
+\contentsline {section}{\numberline {4}Tipos de problemas}{4}%
+\contentsline {section}{\numberline {5}NLP}{4}%
+\contentsline {section}{\numberline {6}Ejemplos}{4}%
